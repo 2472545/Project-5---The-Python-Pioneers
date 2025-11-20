@@ -8,8 +8,15 @@ from matplotlib import animation
 DATAFILE = "ECG_sample.csv"
 FS = 250 # sampling frequency
 def load_ecg(path):
-# TODO load CSV, convert to dataframe
-    pass
+    with open(path, 'r') as ecg_csv_file:
+        rows = []
+        for line in ecg_csv_file:
+            row_values = [value for value in line.strip().split(',')]
+            rows.append(row_values)
+    return list(rows)
+    # TODO load CSV, convert to dataframe
+path = r"C:\Users\2472545\Desktop\ECG_sample.csv"
+load_ecg(path)
 def filter_signal(values):
 # TODO moving average smoothing
     pass
@@ -38,3 +45,7 @@ if __name__ == "__main__":
 # Visualizations
 # Animation
 print("Complete all TODOs!")
+
+# Animation
+print("Complete all TODOs!")
+
