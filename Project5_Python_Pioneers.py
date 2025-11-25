@@ -49,3 +49,5 @@ print("Complete all TODOs!")
 # Animation
 print("Complete all TODOs!")
 
+# CHECK THE SAMPLE PROJECT SOLUTION ASWELL AS THE TEXTBOOK DATA ANALYSIS SECTION
+
