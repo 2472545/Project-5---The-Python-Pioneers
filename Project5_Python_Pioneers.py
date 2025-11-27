@@ -40,14 +40,12 @@ def export_results(df):
     pass
 if __name__ == "__main__":
     df = load_ecg(DATAFILE)
-# Apply filtering
-# Detect R-peaks
-# Visualizations
-# Animation
-print("Complete all TODOs!")
-
-# Animation
-print("Complete all TODOs!")
+    df = filter_signal(df)
+    df = detect_r_peaks(df)
+    create_plots(df)
+    # Animation
+    print("Complete all TODOs!")
 
 # CHECK THE SAMPLE PROJECT SOLUTION ASWELL AS THE TEXTBOOK DATA ANALYSIS SECTION
+
 
