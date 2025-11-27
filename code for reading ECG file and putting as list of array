@@ -1,0 +1,15 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import csv
+import math
+from matplotlib import animation
+
+FS = 250 # sampling frequency
+def Read_ECG_CSV(path):
+    ecg_rows= pd.read_csv(path, sep="\t") #depending on the file being used '/t' is if its seperated by a space and ',' is its a comma  
+    return ecg_rows.values.tolist() 
+    
+ECG_sample = "/Users/justinkhairy/Downloads/ECG_sample_patient1.csv" #change this to whatever your path is 
+print(Read_ECG_CSV(ECG_sample))
