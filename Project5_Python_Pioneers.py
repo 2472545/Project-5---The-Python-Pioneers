@@ -5,18 +5,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import animation
-DATAFILE = "ECG_sample.csv"
-FS = 250 # sampling frequency
+
+DATAFILE = r"C:\Users\6322964\Desktop\ECG_data_patient1_10seconds.csv" # Replace this with the filename from your computer
+FS = 400 # sampling frequency
+
 def load_ecg(path):
-    with open(path, 'r') as ecg_csv_file:
-        rows = []
-        for line in ecg_csv_file:
-            row_values = [value for value in line.strip().split(',')]
-            rows.append(row_values)
-    return list(rows)
-    # TODO load CSV, convert to dataframe
-path = r"C:\Users\2472545\Desktop\ECG_sample.csv"
-load_ecg(path)
+    df = (pd.read_csv(path, header=None)).transpose()  # .transpose() converts the data from a row to a column
+    df.columns = ['Voltage']                           # Labeling the voltage data column
+    df['Voltage'] = pd.to_numeric(df['Voltage'])       # Cleaning the data
+    df['Time'] = df.index / FS                         # Using the frequency to find the time intervals
+    return df
+path = DATAFILE
+print(load_ecg(path)) # Temporarily print to confirm data loading success
+
 def filter_signal(values):
 # TODO moving average smoothing
     pass
@@ -32,20 +33,17 @@ def create_plots(df):
 # TODO rr_scatter.png
 # TODO hr_hist.png
     pass
+
 def make_animation(df):
 # TODO horizontal scrolling ECG animation
     pass
 def export_results(df):
 # TODO ecg_summary.csv and rr_intervals.csv
     pass
-if __name__ == "__main__":
-    df = load_ecg(DATAFILE)
-    df = filter_signal(df)
-    df = detect_r_peaks(df)
-    create_plots(df)
+#if __name__ == "__main__":
+    #df = load_ecg(DATAFILE)
+    #df = filter_signal(df)
+    #df = detect_r_peaks(df)
+    #create_plots(df)
     # Animation
-    print("Complete all TODOs!")
-
-# CHECK THE SAMPLE PROJECT SOLUTION ASWELL AS THE TEXTBOOK DATA ANALYSIS SECTION
-
-
+    #print("Complete all TODOs!")
