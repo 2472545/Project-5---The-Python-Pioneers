@@ -34,7 +34,7 @@ print(compute_metrics(load_ecg(path)))
 def create_plots(df):
 # TODO raw_ecg.png
     plt.figure(figsize=(8,8))
-    sns.lineplot(data=df, x = df['Time'] , y = df['Voltage'])
+    sns.lineplot(data=df, x = df['Time'] , y = df['Voltage'], color = 'gold')
     plt.title("Voltage vs. Time")
     plt.savefig(r"C:\Users\gabri\OneDrive\Desktop\raw_ecg.png") # Replace this with the filename from your computer
     plt.xlim(0, 4)
@@ -59,3 +59,4 @@ def export_results(df):
     #create_plots(df)
     # Animation
     #print("Complete all TODOs!")
+
