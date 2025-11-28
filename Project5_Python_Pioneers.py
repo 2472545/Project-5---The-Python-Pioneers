@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import animation
 
-DATAFILE = r"C:\Users\gabri\Downloads\ECG_data_patient1_10seconds.csv" # Replace this with the filename from your computer
+DATAFILE = r"C:\Users\gabri\Downloads\ECG_DATA.csv" # Replace this with the filename from your computer
 FS = 400 # sampling frequency
 
 def load_ecg(path):
@@ -30,11 +30,13 @@ print(compute_metrics(load_ecg(path)))
 
 def create_plots(df):
 # TODO raw_ecg.png
-    plt.figure(figsize=(8,8))
-    sns.lineplot(data=df, x = df['Time'] , y = df['Voltage'], color = 'gold')
+    palette = sns.hls_palette(n_colors=df["Patient ID"].nunique(), l=.5, s=1)
+    plt.figure(figsize=(14,8))
+    sns.lineplot(data=df,  x= 'Time', y="Voltage", hue="Patient ID", palette = 'bright')
+    sns.hls_palette()
     plt.title("Voltage vs. Time")
     plt.savefig(r"C:\Users\gabri\OneDrive\Desktop\raw_ecg.png") # Replace this with the filename from your computer
-    plt.xlim(0, 4)
+    plt.xlim(0, 10)
     plt.show()
     plt.close()
 create_plots(load_ecg(path))
@@ -56,5 +58,9 @@ def export_results(df):
     #create_plots(df)
     # Animation
     #print("Complete all TODOs!")
+
+
+    #print("Complete all TODOs!")
+
 
 
