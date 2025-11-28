@@ -30,9 +30,8 @@ print(compute_metrics(load_ecg(path)))
 
 def create_plots(df):
 # TODO raw_ecg.png
-    palette = sns.hls_palette(n_colors=df["Patient ID"].nunique(), l=.5, s=1)
     plt.figure(figsize=(14,8))
-    sns.lineplot(data=df,  x= 'Time', y="Voltage", hue="Patient ID", palette = 'bright')
+    sns.lineplot(data=df,  x= 'Time', y="Voltage", hue="Patient ID", palette = 'gist_rainbow')
     sns.hls_palette()
     plt.title("Voltage vs. Time")
     plt.savefig(r"C:\Users\gabri\OneDrive\Desktop\raw_ecg.png") # Replace this with the filename from your computer
@@ -61,6 +60,7 @@ def export_results(df):
 
 
     #print("Complete all TODOs!")
+
 
 
 
