@@ -18,7 +18,7 @@ def filter_signal(df, window_size=WINDOW_SIZE):
     return df_filtered
 def create_filtered_ecg_plot(df_filtered):
     plt.figure(figsize=(14,8))
-    sns.lineplot(data=df_filtered, x='Time', y="Filtered Voltage", hue="Patient ID", palette='bright')
+    sns.lineplot(data=df_filtered, x='Time', y="Filtered Voltage", hue="Patient ID", palette='gist_rainbow')
     plt.title("Filtered ECG Signals (Moving Average Smoothing)")
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (mV)")
