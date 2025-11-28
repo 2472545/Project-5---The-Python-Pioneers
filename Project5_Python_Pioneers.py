@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import animation
 
-DATAFILE = r"C:\Users\6322964\Desktop\ECG_data_patient1_10seconds.csv" # Replace this with the filename from your computer
+DATAFILE = r"C:\Users\gabri\Downloads\ECG_data_patient1_10seconds.csv" # Replace this with the filename from your computer
 FS = 400 # sampling frequency
 
 def load_ecg(path):
@@ -25,14 +25,26 @@ def detect_r_peaks(values):
 # TODO simple threshold-based R-peak detection
     pass
 def compute_metrics(df):
+    time = np.diff(df['Time'])
+    BPM_heart_rate = time / 60 # THIS IS WRONG, BUT I THINK ITS ON THE RIGHT TRACK
 # TODO compute BPM and HRV per patient
-    pass
+    return BPM_heart_rate
+print(compute_metrics(load_ecg(path)))
+
 def create_plots(df):
 # TODO raw_ecg.png
+    plt.figure(figsize=(8,8))
+    sns.lineplot(data=df, x = df['Time'] , y = df['Voltage'])
+    plt.title("Voltage vs. Time")
+    plt.savefig(r"C:\Users\gabri\OneDrive\Desktop\raw_ecg.png") # Replace this with the filename from your computer
+    plt.xlim(0, 4)
+    plt.show()
+    plt.close()
+create_plots(load_ecg(path))
 # TODO filtered_ecg.png
 # TODO rr_scatter.png
 # TODO hr_hist.png
-    pass
+
 
 def make_animation(df):
 # TODO horizontal scrolling ECG animation
