@@ -1,0 +1,32 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib import animation
+DATAFILE = r"/Users/nicholasbourgeois/Downloads/ECG_DATA.csv" # put your own file pathname
+WINDOW_SIZE = 15  
+def moving_average(signal, window=WINDOW_SIZE):
+    kernel = np.ones(window) / window
+    return np.convolve(signal, kernel, mode='same')
+
+def filter_signal(df, window_size=WINDOW_SIZE):
+    df_filtered = df.copy()
+    df_filtered['Filtered Voltage'] = (
+        df_filtered.groupby('Patient ID')['Voltage']
+        .transform(lambda x: moving_average(x, window=window_size))
+    )
+    return df_filtered
+def create_filtered_ecg_plot(df_filtered):
+    plt.figure(figsize=(14,8))
+    sns.lineplot(data=df_filtered, x='Time', y="Filtered Voltage", hue="Patient ID", palette='bright')
+    plt.title("Filtered ECG Signals (Moving Average Smoothing)")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Voltage (mV)")
+    plt.xlim(df_filtered['Time'].min(), df_filtered['Time'].min() + 10)  # safer limit
+    plt.savefig(r"/Users/nicholasbourgeois/Downloads/ECG_DATA.png")
+    plt.show()
+    plt.close()
+
+df = pd.read_csv(DATAFILE)
+df_filtered = filter_signal(df)
+create_filtered_ecg_plot(df_filtered)
