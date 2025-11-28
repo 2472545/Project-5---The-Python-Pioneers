@@ -10,10 +10,7 @@ DATAFILE = r"C:\Users\gabri\Downloads\ECG_data_patient1_10seconds.csv" # Replace
 FS = 400 # sampling frequency
 
 def load_ecg(path):
-    df = (pd.read_csv(path, header=None)).transpose()  # .transpose() converts the data from a row to a column
-    df.columns = ['Voltage']                           # Labeling the voltage data column
-    df['Voltage'] = pd.to_numeric(df['Voltage'])       # Cleaning the data
-    df['Time'] = df.index / FS                         # Using the frequency to find the time intervals
+    df = pd.read_csv(path)
     return df
 path = DATAFILE
 print(load_ecg(path)) # Temporarily print to confirm data loading success
@@ -59,4 +56,5 @@ def export_results(df):
     #create_plots(df)
     # Animation
     #print("Complete all TODOs!")
+
 
