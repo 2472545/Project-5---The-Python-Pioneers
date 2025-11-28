@@ -29,7 +29,9 @@ def compute_metrics(df):
 print(compute_metrics(load_ecg(path)))
 
 def create_plots(df):
-# TODO raw_ecg.png
+
+    # Raw ECG Plot
+
     plt.figure(figsize=(14,8))
     sns.lineplot(data=df,  x= 'Time', y="Voltage", hue="Patient ID", palette = 'gist_rainbow')
     sns.hls_palette()
@@ -38,6 +40,14 @@ def create_plots(df):
     plt.xlim(0, 10)
     plt.show()
     plt.close()
+
+    # Filtered ecg
+
+    # RR Scatter
+
+    # HR histogram
+
+
 create_plots(load_ecg(path))
 # TODO filtered_ecg.png
 # TODO rr_scatter.png
@@ -59,7 +69,7 @@ def export_results(df):
     #print("Complete all TODOs!")
 
 
-    #print("Complete all TODOs!")
+
 
 
 
