@@ -30,6 +30,8 @@ df_filtered = filter_signal(df)
 
 # DETECT R PEAKS TODO
 
+# COMPUTE METRICS TODO
+
 def create_plots(df):
 
     # Raw ECG Plot
