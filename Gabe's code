@@ -19,9 +19,7 @@ def moving_average(signal, window = WINDOW_SIZE):
 
 def filter_signal(df, window_size = WINDOW_SIZE):
     df_filtered = df.copy()
-    df_filtered['Filtered Voltage'] = (
-        df_filtered.groupby('Patient ID')['Voltage']
-        .transform(lambda x: moving_average(x, window=window_size)))
+    df_filtered['Filtered Voltage'] = (df_filtered.groupby('Patient ID')['Voltage'].transform(lambda x: moving_average(x, window=window_size)))
     return df_filtered
 
 df = pd.read_csv(DATAFILE)
