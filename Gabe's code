@@ -81,6 +81,8 @@ def make_animation(df):
     line, = ax.plot([], [], '-', color = 'lime', lw = 2)
     print(line)
 
+# NOT SURE IF THIS IS THE ANIMATION HE WANTS; WE CAN ASK HIM ON TUESDAY
+
     def animate(i):
         window = 250
         start = max(0, i - window)
