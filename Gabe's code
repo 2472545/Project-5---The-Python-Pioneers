@@ -82,13 +82,13 @@ def make_animation(df):
 # NOT SURE IF THIS IS THE ANIMATION HE WANTS; WE CAN ASK HIM ON TUESDAY
 
     def animate(i):
-        window = 250
+        window = 400 # Sampling frequency
         start = max(0, i - window)
         x = times[:i]
         y = voltage[:i]
         line.set_data(x, y)
-        ax.set_xlim(times[start], times[i-1])
-        ax.set_title(f"Time: {i+1} s")
+        ax.set_xlim(times[start], times[i])
+        ax.set_title(f"Time: {i} s")
         return line,
 
     anim = animation.FuncAnimation(fig, animate, frames=len(times), interval = 1)
