@@ -28,6 +28,8 @@ df = pd.read_csv(DATAFILE)
 df_filtered = filter_signal(df)
 #create_filtered_ecg_plot(df_filtered)
 
+# DETECT R PEAKS TODO
+
 def create_plots(df):
 
     # Raw ECG Plot
