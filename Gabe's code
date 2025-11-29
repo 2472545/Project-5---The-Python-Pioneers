@@ -88,7 +88,7 @@ def make_animation(df):
         y = voltage[:i]
         line.set_data(x, y)
         ax.set_xlim(times[start], times[i])
-        ax.set_title(f"Time: {i} s")
+        ax.set_title(f"Time: {times[i]:.2f} s")
         return line,
 
     anim = animation.FuncAnimation(fig, animate, frames=len(times), interval = 1)
