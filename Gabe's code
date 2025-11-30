@@ -65,8 +65,8 @@ create_plots(load_ecg(path))
 # TODO hr_hist.png
 
 
-def make_animation(df):
-    ecg_data = df.groupby("Time")["Voltage"].mean().reset_index()
+def make_animation(df_filtered):
+    ecg_data = df_filtered.groupby("Time")["Voltage"].mean().reset_index()
     times = ecg_data["Time"].values
     voltage = ecg_data["Voltage"].values
 
