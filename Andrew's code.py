@@ -131,7 +131,6 @@ if __name__ == "__main__":
     df = filter_signal(df) # Apply filtering
     detect_r_peaks(df) # Detect R-peaks
     all_peaks = detect_r_peaks(df) # Makes all_peaks accessible for following functions
-    rr = compute_metrics(all_peaks)
     #metrics = compute_metrics(all_peaks)
     create_plots(df) # Visualizations
     print(make_animation(df))
