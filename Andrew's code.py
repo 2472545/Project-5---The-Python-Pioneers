@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import animation
-DATAFILE = r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\ECG_DATA.csv" # Replace this with the filename from your computer
+DATAFILE = r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\ECG_DATA.csv" # Replace this with the filename from your computer
 FS = 400 # Sampling frequency in Hz
 WINDOW_SIZE = 15 # For moving average calculation
 
@@ -20,35 +20,45 @@ def filter_signal(df, window = WINDOW_SIZE):
         )
     return df
 
-def detect_r_peaks(df, threshold_percentage=0.5):
-    all_peaks = {}
-    for patient, group in df.groupby('Patient ID'):
-        group = group[group['Time'] > 0.2] # Excluding the first 0.2 seconds of data since it is not representative
-        ecg = group['Voltage'].values
-        time = group['Time'].values
-        baseline = np.median(ecg) # Computing baseline for patient
-        peak_height = np.max(ecg) - baseline # Computing peak height of ecg
-        threshold = threshold_percentage * peak_height # Computing threshold for patient
-        peak_times = [] # Initializing an empty array to store peak times
-        for i in range(1, len(ecg) - 1):
-            if (ecg[i] - baseline) > threshold and ecg[i] >= ecg[i-1] and ecg[i] > ecg[i+1]:
-                peak_times.append(float(time[i]))
-            all_peaks[patient] = peak_times  # Storing peak times for patient
-        print(f"Patient {patient} R-Peaks times (in seconds): {peak_times}") 
-    return all_peaks
-
-
 def compute_metrics(all_peaks):
-    metrics = []
+    #metrics = []
     for patient, peak_times in all_peaks.items():
         bpm = 60 * (len(peak_times) - 1) / (peak_times[-1] - peak_times[0]) # 60*(number of beats in 10 sec - 1)/(time of last peak - time of first peak in seconds)
         rr = (np.diff(peak_times)) # Computes RR-intervals as the time difference between each pair of R-peaks
         hrv = np.std(rr) # Standard deviation of RR-intervals
-        patient_metrics = [patient, bpm, rr, hrv]
-        metrics.append(patient_metrics)
-        print(f"Patient {patient}: BPM = {bpm:.2f}, HRV = {hrv:.4f}")
-    return metrics
+        #patient_metrics = [patient, bpm, rr, hrv]
+        #metrics.append(patient_metrics)
+        #print(f"Patient {patient}: BPM = {bpm:.2f}, HRV = {hrv:.4f}")
+    return rr #metrics
     
+def detect_r_peaks(df, threshold_percentage=0.5):
+    # Creating new empty columns in the dataframe
+    df["R-peak time"] = np.nan
+    df["R-peak voltage"] = np.nan
+
+    for patient, group in df.groupby('Patient ID'):
+        group = group[group['Time'] > 0.2] # Excluding the first 0.2 seconds of data since it is not representative
+        ecg = group['Voltage'].values
+        time = group['Time'].values
+        idx = group.index.values
+        
+        baseline = np.median(ecg) # Computing baseline for patient
+        peak_height = np.max(ecg) - baseline # Computing peak height of ecg
+        threshold = threshold_percentage * peak_height # Computing threshold for patient
+        
+        peak_times = [] # Initializing empty arrays to store peak information
+        peak_voltages = []
+        peak_indices = []
+        
+        for i in range(1, len(ecg) - 1):
+            if (ecg[i] - baseline) > threshold and ecg[i] >= ecg[i-1] and ecg[i] > ecg[i+1]:
+                peak_times.append(float(time[i]))
+                peak_voltages.append(float(ecg[i]))
+                peak_indices.append(idx[i])
+        df.loc[peak_indices, "R-peak time"] = peak_times
+        df.loc[peak_indices, "R-peak time"] = peak_voltages
+    return df
+
 
 def create_plots(df):
     # Raw ECG Plot
@@ -56,7 +66,7 @@ def create_plots(df):
     sns.lineplot(data=df,  x= 'Time', y="Voltage", hue="Patient ID", palette = 'gist_rainbow')
     sns.hls_palette()
     plt.title("Raw ECG Signals")
-    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\raw_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\raw_ecg.png") # Replace this with the filename from your computer
     plt.xlim(0, 10)
     plt.show()
     plt.close()
@@ -68,7 +78,7 @@ def create_plots(df):
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (mV)")
     plt.xlim(df['Time'].min(), df['Time'].min() + 10)  # safer limit
-    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\filtered_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\filtered_ecg.png") # Replace this with the filename from your computer
     plt.show()
     plt.close()
 
@@ -106,7 +116,7 @@ def make_animation(df):
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (mV)")
     plt.show()
-    anim.save(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\ecg_scrolling.gif")
+    anim.save(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\ecg_scrolling.gif")
     plt.close()
 
 
@@ -121,7 +131,8 @@ if __name__ == "__main__":
     df = filter_signal(df) # Apply filtering
     detect_r_peaks(df) # Detect R-peaks
     all_peaks = detect_r_peaks(df) # Makes all_peaks accessible for following functions
-    metrics = compute_metrics(all_peaks)
+    rr = compute_metrics(all_peaks)
+    #metrics = compute_metrics(all_peaks)
     create_plots(df) # Visualizations
     print(make_animation(df))
     print("Complete all TODOs!")
