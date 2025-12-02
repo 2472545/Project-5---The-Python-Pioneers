@@ -129,7 +129,7 @@ def export_results(df):
 if __name__ == "__main__":
     df = load_ecg(path)
     df = filter_signal(df) # Apply filtering
-    detect_r_peaks(df) # Detect R-peaks
+    df = detect_r_peaks(df) # Detect R-peaks
     all_peaks = detect_r_peaks(df) # Makes all_peaks accessible for following functions
     #metrics = compute_metrics(all_peaks)
     create_plots(df) # Visualizations
@@ -143,3 +143,4 @@ def create_plots(df):
     plt.title("pH vs Turbidity")
     plt.savefig(r"C:\Users\azharh\Desktop\ListofFinalProjects\WaterQuality_Project\scatter_pH_vs_turbidity.png")
     plt.close()
+
