@@ -11,9 +11,7 @@ def make_animation(df_filtered):
 
     line, = ax.plot([], [], '-', color = 'lime', lw = 2)
     print(line)
-
-# NOT SURE IF THIS IS THE ANIMATION HE WANTS; WE CAN ASK HIM ON TUESDAY
-
+    
     def animate(i):
         window = 400 # Sampling frequency
         start = max(0, i - window)
