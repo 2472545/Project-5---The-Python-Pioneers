@@ -135,3 +135,11 @@ if __name__ == "__main__":
     create_plots(df) # Visualizations
     print(make_animation(df))
     print("Complete all TODOs!")
+    
+def create_plots(df):
+    # scatter pH vs turbidity
+    plt.figure(figsize=(6,4))
+    sns.scatterplot(data=df, x="pH", y="Turbidity_NTU", hue="SiteID")
+    plt.title("pH vs Turbidity")
+    plt.savefig(r"C:\Users\azharh\Desktop\ListofFinalProjects\WaterQuality_Project\scatter_pH_vs_turbidity.png")
+    plt.close()
