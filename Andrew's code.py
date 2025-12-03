@@ -100,6 +100,15 @@ def create_plots(df, rr_df):
     plt.close()
 
     # HR histogram TODO "hr_hist.png"
+    bpm_values = [info["BPM"] for info in metrics.values()]
+    plt.figure(figsize=(10,6))
+    sns.histplot(bpm_values, bins=10, color='skyblue', edgecolor='black')
+    plt.title("Histogram of Heart Rate (BPM)")
+    plt.xlabel("Beats Per Minute (BPM)")
+    plt.ylabel("Frequency")
+    plt.savefig(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\hr_hist.png")
+    plt.show()
+    plt.close()
 
 def make_animation(df):
     ecg_data = df.groupby("Time")["Filtered Voltage"].mean().reset_index()
