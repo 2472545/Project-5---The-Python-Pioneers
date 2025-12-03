@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import animation
-DATAFILE = r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\ECG_DATA.csv" # Replace this with the filename from your computer
+DATAFILE = r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\ECG_DATA.csv" # Replace this with the filename from your computer
 FS = 400 # Sampling frequency in Hz
 WINDOW_SIZE = 15 # For moving average calculation
 
@@ -29,7 +29,9 @@ def compute_metrics(all_peaks):
         #patient_metrics = [patient, bpm, rr, hrv]
         #metrics.append(patient_metrics)
         #print(f"Patient {patient}: BPM = {bpm:.2f}, HRV = {hrv:.4f}")
-    return rr #metrics
+        df["RR-Intervals"] = np.nan
+        df.loc[:len(rr)-1, "RR"] = rr
+    return df #metrics
     
 def detect_r_peaks(df, threshold_percentage=0.5):
     # Creating new empty columns in the dataframe
@@ -66,7 +68,7 @@ def create_plots(df):
     sns.lineplot(data=df,  x= 'Time', y="Voltage", hue="Patient ID", palette = 'gist_rainbow')
     sns.hls_palette()
     plt.title("Raw ECG Signals")
-    plt.savefig(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\raw_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\raw_ecg.png") # Replace this with the filename from your computer
     plt.xlim(0, 10)
     plt.show()
     plt.close()
@@ -78,12 +80,17 @@ def create_plots(df):
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (mV)")
     plt.xlim(df['Time'].min(), df['Time'].min() + 10)  # safer limit
-    plt.savefig(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\filtered_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\filtered_ecg.png") # Replace this with the filename from your computer
     plt.show()
     plt.close()
 
     # RR Scatter TODO "rr_scatter.png"
-
+    # scatter pH vs turbidity
+    #plt.figure(figsize=(6,4))
+    #sns.scatterplot(data=df, x="pH", y="Turbidity_NTU", hue="SiteID")
+    #plt.title("pH vs Turbidity")
+    #plt.savefig(r"C:\Users\azharh\Desktop\ListofFinalProjects\WaterQuality_Project\scatter_pH_vs_turbidity.png")
+    #plt.close()
     # HR histogram TODO "hr_hist.png"
 
 def make_animation(df):
@@ -116,7 +123,7 @@ def make_animation(df):
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (mV)")
     plt.show()
-    anim.save(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\ecg_scrolling.gif")
+    anim.save(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\ecg_scrolling.gif")
     plt.close()
 
 
@@ -129,18 +136,11 @@ def export_results(df):
 if __name__ == "__main__":
     df = load_ecg(path)
     df = filter_signal(df) # Apply filtering
-    df = detect_r_peaks(df) # Detect R-peaks
+    detect_r_peaks(df) # Detect R-peaks
     all_peaks = detect_r_peaks(df) # Makes all_peaks accessible for following functions
     #metrics = compute_metrics(all_peaks)
-    create_plots(df) # Visualizations
-    print(make_animation(df))
+    #create_plots(df) # Visualizations
+    #print(make_animation(df))
+    print(df)
     print("Complete all TODOs!")
-    
-def create_plots(df):
-    # scatter pH vs turbidity
-    plt.figure(figsize=(6,4))
-    sns.scatterplot(data=df, x="pH", y="Turbidity_NTU", hue="SiteID")
-    plt.title("pH vs Turbidity")
-    plt.savefig(r"C:\Users\azharh\Desktop\ListofFinalProjects\WaterQuality_Project\scatter_pH_vs_turbidity.png")
-    plt.close()
-
+    df.to_csv(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Project5.csv", index=False) # Saves the complete csv
