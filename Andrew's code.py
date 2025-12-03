@@ -3,42 +3,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import animation
-DATAFILE = r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\ECG_DATA.csv" # Replace this with the filename from your computer
+DATAFILE = r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\ECG_DATA.csv" # Replace this with the filename from your computer
 FS = 400 # Sampling frequency in Hz
-WINDOW_SIZE = 15 # For moving average calculation
 
 def load_ecg(path):
     df = pd.read_csv(path)
     return df
 path = DATAFILE
 
+WINDOW_SIZE = 15 # For moving average calculation
 def filter_signal(df, window = WINDOW_SIZE):
     kernel = np.ones(window) / window
     df['Filtered Voltage'] = (
         df.groupby('Patient ID')['Voltage']
         .transform(lambda x: np.convolve(x, kernel, mode='same'))
-        )
+    )
     return df
-
-def compute_metrics(all_peaks):
-    #metrics = []
-    for patient, peak_times in all_peaks.items():
-        bpm = 60 * (len(peak_times) - 1) / (peak_times[-1] - peak_times[0]) # 60*(number of beats in 10 sec - 1)/(time of last peak - time of first peak in seconds)
-        rr = (np.diff(peak_times)) # Computes RR-intervals as the time difference between each pair of R-peaks
-        hrv = np.std(rr) # Standard deviation of RR-intervals
-        #patient_metrics = [patient, bpm, rr, hrv]
-        #metrics.append(patient_metrics)
-        #print(f"Patient {patient}: BPM = {bpm:.2f}, HRV = {hrv:.4f}")
-        df["RR-Intervals"] = np.nan
-        df.loc[:len(rr)-1, "RR"] = rr
-    return df #metrics
     
 def detect_r_peaks(df, threshold_percentage=0.5):
     # Creating new empty columns in the dataframe
     df["R-peak time"] = np.nan
     df["R-peak voltage"] = np.nan
-
-    for patient, group in df.groupby('Patient ID'):
+    all_peaks = {}
+    for patient_id, group in df.groupby('Patient ID'):
         group = group[group['Time'] > 0.2] # Excluding the first 0.2 seconds of data since it is not representative
         ecg = group['Voltage'].values
         time = group['Time'].values
@@ -53,22 +40,38 @@ def detect_r_peaks(df, threshold_percentage=0.5):
         peak_indices = []
         
         for i in range(1, len(ecg) - 1):
-            if (ecg[i] - baseline) > threshold and ecg[i] >= ecg[i-1] and ecg[i] > ecg[i+1]:
-                peak_times.append(float(time[i]))
+            if (ecg[i] - baseline) > threshold and ecg[i] >= ecg[i-1] and ecg[i] > ecg[i+1]: # Condition for peak detection
+                peak_times.append(float(time[i]))                                            # Making lists of the peak times, voltages, and indices
                 peak_voltages.append(float(ecg[i]))
                 peak_indices.append(idx[i])
         df.loc[peak_indices, "R-peak time"] = peak_times
-        df.loc[peak_indices, "R-peak time"] = peak_voltages
-    return df
+        df.loc[peak_indices, "R-peak voltage"] = peak_voltages
+        all_peaks[patient_id] = peak_times
+    return df, all_peaks
 
+def compute_metrics(all_peaks):
+    rows = []
+    metrics = {}
+    for patient_id, peak_times in all_peaks.items():
+        rr = np.diff(peak_times)
+        for rr_value in rr:
+            rows.append({"Patient ID": patient_id, "RR-Interval": rr_value})
+        # Calculating BPM and HRV
+        bpm = 60 * (len(peak_times) - 1) / (peak_times[-1] - peak_times[0])
+        hrv = np.std(rr)
+        metrics[patient_id] = {"BPM": bpm, "RR_intervals": rr.tolist(), "HRV": hrv}
+    rr_df = pd.DataFrame(rows)
+     # Add RR_n+1 for scatter plot
+    rr_df['RR_n+1'] = rr_df.groupby("Patient ID")['RR-Interval'].shift(-1)
+    return rr_df, metrics
 
-def create_plots(df):
+def create_plots(df, rr_df):
     # Raw ECG Plot
     plt.figure(figsize=(14,8))
     sns.lineplot(data=df,  x= 'Time', y="Voltage", hue="Patient ID", palette = 'gist_rainbow')
     sns.hls_palette()
     plt.title("Raw ECG Signals")
-    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\raw_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\raw_ecg.png") # Replace this with the filename from your computer
     plt.xlim(0, 10)
     plt.show()
     plt.close()
@@ -80,17 +83,22 @@ def create_plots(df):
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (mV)")
     plt.xlim(df['Time'].min(), df['Time'].min() + 10)  # safer limit
-    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\filtered_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\filtered_ecg.png") # Replace this with the filename from your computer
     plt.show()
     plt.close()
 
-    # RR Scatter TODO "rr_scatter.png"
-    # scatter pH vs turbidity
-    #plt.figure(figsize=(6,4))
-    #sns.scatterplot(data=df, x="pH", y="Turbidity_NTU", hue="SiteID")
-    #plt.title("pH vs Turbidity")
-    #plt.savefig(r"C:\Users\azharh\Desktop\ListofFinalProjects\WaterQuality_Project\scatter_pH_vs_turbidity.png")
-    #plt.close()
+    # RR Scatter plot 
+    rr_df_clean = rr_df.dropna(subset=['RR_n+1'])  # drop NaNs
+    plt.figure(figsize=(10,6))
+    rr_df["RR_n+1"] = rr_df_clean.groupby("Patient ID")["RR-Interval"].shift(-1)
+    sns.scatterplot(data=rr_df, x="RR-Interval", y="RR_n+1", hue="Patient ID", palette='gist_rainbow')
+    plt.title("RR Interval Scatter Plot")
+    plt.xlabel("RR Interval (s)")
+    plt.ylabel("Next RR Interval (s)")
+    plt.savefig(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\rr_scatter.png")
+    plt.show()
+    plt.close()
+
     # HR histogram TODO "hr_hist.png"
 
 def make_animation(df):
@@ -107,8 +115,6 @@ def make_animation(df):
     line, = ax.plot([], [], '-', color = 'lime', lw = 2)
     print(line)
 
-# NOT SURE IF THIS IS THE ANIMATION HE WANTS; WE CAN ASK HIM ON TUESDAY
-
     def animate(i):
         window = 400 # Sampling frequency
         start = max(0, i - window)
@@ -123,24 +129,22 @@ def make_animation(df):
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (mV)")
     plt.show()
-    anim.save(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\ecg_scrolling.gif")
+    anim.save(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\ecg_scrolling.gif")
     plt.close()
-
 
 
 def export_results(df):
 # TODO ecg_summary.csv and rr_intervals.csv
-    # I think this function needs to take arrays from the compute_metrics function and convert them to csv files (ecg_summary.csv and rr_intervals.csv)
-    pass
+    rr_df.to_csv(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\RR_Intervals.csv", index=False)
+
+
 
 if __name__ == "__main__":
     df = load_ecg(path)
     df = filter_signal(df) # Apply filtering
-    detect_r_peaks(df) # Detect R-peaks
-    all_peaks = detect_r_peaks(df) # Makes all_peaks accessible for following functions
-    #metrics = compute_metrics(all_peaks)
-    #create_plots(df) # Visualizations
-    #print(make_animation(df))
-    print(df)
-    print("Complete all TODOs!")
-    df.to_csv(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Project5.csv", index=False) # Saves the complete csv
+    df, all_peaks = detect_r_peaks(df)
+    rr_df, metrics = compute_metrics(all_peaks)
+    create_plots(df, rr_df) 
+    print(make_animation(df))
+    export_results(rr_df)
+    df.to_csv(r"D:\Science and Music Double DCS Program\Science\Programming in Science\Project\Project5.csv", index=False)
