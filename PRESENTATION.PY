@@ -87,7 +87,7 @@ def create_plots(df, rr_df): # We define the function to create all plots
     plt.show() # This will make the plot appear
     plt.close() # This will close the plot
 
-    '''GABE - PRESENTING THE FILTERED ECG PLOT'''
+    '''NICK - PRESENTING THE FILTERED ECG PLOT'''
 
     # Filtered ECG
     plt.figure(figsize=(14,8)) # This sets the dimensions of the plot
@@ -100,7 +100,7 @@ def create_plots(df, rr_df): # We define the function to create all plots
     plt.show() # This will make the plot appear
     plt.close() # This will close the plot
 
-    '''NICK - PRESENTING THE RR SCATTER PLOT'''
+    '''GABE - PRESENTING THE RR SCATTER PLOT'''
 
     # RR Scatter plot 
     rr_df_clean = rr_df.dropna(subset=['RR_n+1'])  # drop NaNs
