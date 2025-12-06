@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import animation
 
-
-DATAFILE = r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Final Submission files\ECG_DATA.csv" # Replace this with the filename from your computer
+FILE_LOCATION = r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Final Submission files" # Replace this with the filename from your computer
+DATAFILE = f"{FILE_LOCATION}\\ECG_DATA.csv" 
 FS = 400 # Sampling frequency in Hz
 
 def load_ecg(path): # We define the function
@@ -64,12 +64,13 @@ def compute_metrics(all_peaks): # We define the function
         bpm = 60 * (len(peak_times) - 1) / (peak_times[-1] - peak_times[0]) # The formula for heart rate in beats per minute
         hrv = np.std(rr)  # Calculating heart rate variability as the standard deviation of the rr intervals
         
-        metrics[patient_id] = {"BPM": bpm, "RR_intervals": rr.tolist(), "HRV": hrv} 
+        metrics[patient_id] = {"BPM": bpm, "HRV": hrv} 
     
     rr_df = pd.DataFrame(rows) # We add the rr intervals to the dataframe using pandas
     rr_df['RR_n+1'] = rr_df.groupby("Patient ID")['RR-Interval'].shift(-1) # We Add RR_n+1 for scatter plot, as this is the case for many rr plots in clinical setting
     
-    summary_df = pd.DataFrame(metrics)
+    summary_df = pd.DataFrame(metrics).T
+    summary_df.index.name ="Patient ID"
     
     return rr_df, summary_df, metrics
 
@@ -80,7 +81,7 @@ def create_plots(df, rr_df): # We define the function to create all plots
     sns.lineplot(data=df,  x= 'Time', y="Voltage", hue="Patient ID", palette = 'gist_rainbow') # We set our parameters
     sns.hls_palette()
     plt.title("Raw ECG Signals") # We set the title
-    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Final Submission files\raw_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(f"{FILE_LOCATION}\\raw_ecg.png") # Replace this with the filename from your computer
     plt.xlabel("Time (s)") # We label the x axis
     plt.ylabel("Voltage (mV)") # We label the y axis
     plt.xlim(0, 10) # We set the x limit from 0 to 10 seconds, as is the domain for our time values
@@ -95,7 +96,7 @@ def create_plots(df, rr_df): # We define the function to create all plots
     plt.xlabel("Time (s)") # We label the x axis
     plt.ylabel("Voltage (mV)") # We label the y axis
     plt.xlim(df['Time'].min(), df['Time'].min() + 10)  # safer limit
-    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Final Submission files\filtered_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(f"{FILE_LOCATION}\\filtered_ecg.png") # Replace this with the filename from your computer
     plt.show() # This will make the plot appear
     plt.close() # This will close the plot
 
@@ -108,7 +109,7 @@ def create_plots(df, rr_df): # We define the function to create all plots
     plt.title("RR Interval Scatter Plot") # We set the title
     plt.xlabel("RR Interval (s)") # We label the x axis
     plt.ylabel("Next RR Interval (s)") # We label the y axis
-    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Final Submission files\rr_scatter.png") # Replace this with the filename from your computer
+    plt.savefig(f"{FILE_LOCATION}\\rr_scatter.png") # Replace this with the filename from your computer
     plt.show() # This will make the plot appear
     plt.close() # This will close the plot
 
@@ -120,7 +121,7 @@ def create_plots(df, rr_df): # We define the function to create all plots
     plt.title("Histogram of Heart Rate (BPM)") # We set the title
     plt.xlabel("Beats Per Minute (BPM)") # We label the x axis
     plt.ylabel("Frequency") # We label the y axis
-    plt.savefig(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Final Submission files\hr_hist.png") # Replace this with the filename from your computer
+    plt.savefig(f"{FILE_LOCATION}\\hr_hist.png") # Replace this with the filename from your computer
     plt.show() # This will make the plot appear
     plt.close() # This will close the plot
 
@@ -153,22 +154,19 @@ def make_animation(df): # We define the function
     plt.xlabel("Time (s)") # We label the x axis
     plt.ylabel("Voltage (mV)") # We label the y axis
     plt.show() # This will make the plot appear
-    anim.save(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Final Submission files\ecg_scrolling.gif") # Replace the file path for your computer
+    anim.save(f"{FILE_LOCATION}\\ecg_scrolling.gif") # Replace the file path for your computer
     plt.close() # This will close the plot
 
 
 def export_results(rr_df, summary_df):
-# TODO ecg_summary.csv and rr_intervals.csv
-
-    rr_df.to_csv(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Final Submission files\rr_intervals.csv") # We export the results of the rr intervals to a new csv file
-    summary_df.to_csv(r"K:\Science and Music Double DCS Program\Science\Programming in Science\Project\Final Submission files\ecg_summary.csv") # Working on it, but essentially the same as the latter
-
+    rr_df.to_csv(f"{FILE_LOCATION}\\rr_intervals.csv")
+    summary_df.to_csv(f"{FILE_LOCATION}\\ecg_summary.csv")
 
 if __name__ == "__main__":
     df = load_ecg(path) # We define the dataframe by calling the csv conversion function
     df = filter_signal(df) # We pply filtering to the dataframe
     df, all_peaks = detect_r_peaks(df) # We proceed by calling the function
     rr_df, summary_df, metrics = compute_metrics(all_peaks) # We proceed by calling the function
-    #create_plots(df, rr_df) # We call the plot creating function
-    #print(make_animation(df)) # We call the animation function
     export_results(rr_df, summary_df) # We call the export results function
+    create_plots(df, rr_df) # We call the plot creating function
+    print(make_animation(df)) # We call the animation function
