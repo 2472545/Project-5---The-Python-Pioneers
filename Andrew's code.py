@@ -26,6 +26,8 @@ def filter_signal(df, window = WINDOW_SIZE): # We define the function
 def detect_r_peaks(df, threshold_percentage = 0.5): # The threshold will aid in computing the R peaks
     df["R-peak time"] = np.nan # We add an empty row to the already existing dataframe for the r peak timetime
     df["R-peak voltage"] = np.nan # We add an empty row to the already existing dataframe for the r peak voltage
+    df["BPM"] = np.nan
+    df["HRV"] = np.nan
     all_peaks = {} # We set an empty list for the r peaks
     for patient_id, group in df.groupby('Patient ID'): # We group by Patient ID so that we have the peaks for every patient
         group = group[group['Time'] > 0.2] # Excluding the first 0.2 seconds of data since it is not representative
@@ -63,25 +65,26 @@ def compute_metrics(all_peaks): # We define the function
         # Calculating BPM and HRV
         bpm = 60 * (len(peak_times) - 1) / (peak_times[-1] - peak_times[0]) # The formula for heart rate in beats per minute
         hrv = np.std(rr)  # Calculating heart rate variability as the standard deviation of the rr intervals
-        
+       
         metrics[patient_id] = {"BPM": bpm, "HRV": hrv} 
-    
-    rr_df = pd.DataFrame(rows) # We add the rr intervals to the dataframe using pandas
-    rr_df['RR_n+1'] = rr_df.groupby("Patient ID")['RR-Interval'].shift(-1) # We Add RR_n+1 for scatter plot, as this is the case for many rr plots in clinical setting
-    
-    summary_df = pd.DataFrame(metrics).T
-    summary_df.index.name ="Patient ID"
-    
-    return rr_df, summary_df, metrics
 
-def create_plots(df, rr_df): # We define the function to create all plots
+        first_index = df[df["Patient ID"] == patient_id].index[0] # Adding bpm and hrv to the dataframe at the first row of each patient
+        df.loc[first_index, "BPM"] = bpm
+        df.loc[first_index, "HRV"] = hrv
+
+    rr_df = pd.DataFrame(rows) # We add the rr intervals to the dataframe using pandas
+    rr_df['RR_n+1 (for scatter plot)'] = rr_df.groupby("Patient ID")['RR-Interval'].shift(-1) # We Add RR_n+1 for scatter plot, as this is the case for many rr plots in clinical setting
+
+    return rr_df, df, metrics
+
+def create_plots(df, rr_df, metrics): # We define the function to create all plots
 
     # Raw ECG Plot
     plt.figure(figsize=(14,8)) # This sets the dimensions of the plot
     sns.lineplot(data=df,  x= 'Time', y="Voltage", hue="Patient ID", palette = 'gist_rainbow') # We set our parameters
     sns.hls_palette()
     plt.title("Raw ECG Signals") # We set the title
-    plt.savefig(f"{FILE_LOCATION}\\raw_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(f"{FILE_LOCATION}\\raw_ecg.png") 
     plt.xlabel("Time (s)") # We label the x axis
     plt.ylabel("Voltage (mV)") # We label the y axis
     plt.xlim(0, 10) # We set the x limit from 0 to 10 seconds, as is the domain for our time values
@@ -96,20 +99,20 @@ def create_plots(df, rr_df): # We define the function to create all plots
     plt.xlabel("Time (s)") # We label the x axis
     plt.ylabel("Voltage (mV)") # We label the y axis
     plt.xlim(df['Time'].min(), df['Time'].min() + 10)  # safer limit
-    plt.savefig(f"{FILE_LOCATION}\\filtered_ecg.png") # Replace this with the filename from your computer
+    plt.savefig(f"{FILE_LOCATION}\\filtered_ecg.png") 
     plt.show() # This will make the plot appear
     plt.close() # This will close the plot
 
 
     # RR Scatter plot 
-    rr_df_clean = rr_df.dropna(subset=['RR_n+1'])  # drop NaNs
+    rr_df_clean = rr_df.dropna(subset=['RR_n+1 (for scatter plot)'])  # drop NaNs
     plt.figure(figsize=(10,6)) # This sets the dimensions of the plot
-    rr_df["RR_n+1"] = rr_df_clean.groupby("Patient ID")["RR-Interval"].shift(-1)
-    sns.scatterplot(data=rr_df, x="RR-Interval", y="RR_n+1", hue="Patient ID", palette='cool') # We set our parameters
+    rr_df["RR_n+1 (for scatter plot)"] = rr_df_clean.groupby("Patient ID")["RR-Interval"].shift(-1)
+    sns.scatterplot(data=rr_df, x="RR-Interval", y="RR_n+1 (for scatter plot)", hue="Patient ID", palette='cool') # We set our parameters
     plt.title("RR Interval Scatter Plot") # We set the title
     plt.xlabel("RR Interval (s)") # We label the x axis
     plt.ylabel("Next RR Interval (s)") # We label the y axis
-    plt.savefig(f"{FILE_LOCATION}\\rr_scatter.png") # Replace this with the filename from your computer
+    plt.savefig(f"{FILE_LOCATION}\\rr_scatter.png") 
     plt.show() # This will make the plot appear
     plt.close() # This will close the plot
 
@@ -121,7 +124,7 @@ def create_plots(df, rr_df): # We define the function to create all plots
     plt.title("Histogram of Heart Rate (BPM)") # We set the title
     plt.xlabel("Beats Per Minute (BPM)") # We label the x axis
     plt.ylabel("Frequency") # We label the y axis
-    plt.savefig(f"{FILE_LOCATION}\\hr_hist.png") # Replace this with the filename from your computer
+    plt.savefig(f"{FILE_LOCATION}\\hr_hist.png") 
     plt.show() # This will make the plot appear
     plt.close() # This will close the plot
 
@@ -149,24 +152,23 @@ def make_animation(df): # We define the function
         ax.set_xlim(times[start], times[i]) # We set the x limit to the i'th index of time
         ax.set_title(f"Time: {times[i]:.2f} s") # We set the title and we make it change depending on the time. WE WILL TRY TO MAKE THE GRAPH SCROLL FASTER
         return line # We return the line
-
     anim = animation.FuncAnimation(fig, animate, frames=len(times), interval = 1) # Finally, we plot the animation
-    plt.xlabel("Time (s)") # We label the x axis
-    plt.ylabel("Voltage (mV)") # We label the y axis
-    plt.show() # This will make the plot appear
-    anim.save(f"{FILE_LOCATION}\\ecg_scrolling.gif") # Replace the file path for your computer
-    plt.close() # This will close the plot
+    plt.xlabel("Time (s)")
+    plt.ylabel("Voltage (mV)")
+    plt.show()
+    anim.save(f"{FILE_LOCATION}\\ecg_scrolling.gif")
+    plt.close()
 
 
-def export_results(rr_df, summary_df):
+def export_results(rr_df, df):
     rr_df.to_csv(f"{FILE_LOCATION}\\rr_intervals.csv")
-    summary_df.to_csv(f"{FILE_LOCATION}\\ecg_summary.csv")
+    df.to_csv(f"{FILE_LOCATION}\\ecg_summary.csv")
 
 if __name__ == "__main__":
     df = load_ecg(path) # We define the dataframe by calling the csv conversion function
     df = filter_signal(df) # We pply filtering to the dataframe
     df, all_peaks = detect_r_peaks(df) # We proceed by calling the function
     rr_df, summary_df, metrics = compute_metrics(all_peaks) # We proceed by calling the function
-    export_results(rr_df, summary_df) # We call the export results function
-    create_plots(df, rr_df) # We call the plot creating function
+    export_results(rr_df, df) # We call the export results function
+    create_plots(df, rr_df, metrics) # We call the plot creating function
     print(make_animation(df)) # We call the animation function
