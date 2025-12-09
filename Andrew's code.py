@@ -152,11 +152,12 @@ def make_animation(df): # We define the function
         ax.set_xlim(times[start], times[i]) # We set the x limit to the i'th index of time
         ax.set_title(f"Time: {times[i]:.2f} s") # We set the title and we make it change depending on the time. WE WILL TRY TO MAKE THE GRAPH SCROLL FASTER
         return line # We return the line
-    anim = animation.FuncAnimation(fig, animate, frames=len(times), interval = 1) # Finally, we plot the animation
+    frame_skip = 4
+    anim = animation.FuncAnimation(fig, animate, frames=range(0, len(times), frame_skip), interval = 10) # Finally, we plot the animation
     plt.xlabel("Time (s)")
     plt.ylabel("Voltage (mV)")
     plt.show()
-    anim.save(f"{FILE_LOCATION}\\ecg_scrolling.gif")
+    anim.save(f"{FILE_LOCATION}\\ecg_scrolling.gif", writer="pillow", fps = 30)
     plt.close()
 
 
@@ -170,5 +171,5 @@ if __name__ == "__main__":
     df, all_peaks = detect_r_peaks(df) # We proceed by calling the function
     rr_df, summary_df, metrics = compute_metrics(all_peaks) # We proceed by calling the function
     export_results(rr_df, df) # We call the export results function
-    create_plots(df, rr_df, metrics) # We call the plot creating function
+    #create_plots(df, rr_df, metrics) # We call the plot creating function
     print(make_animation(df)) # We call the animation function
